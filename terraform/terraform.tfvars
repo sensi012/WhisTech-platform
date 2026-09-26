@@ -1,0 +1,5 @@
+project_name = "whistech"
+environment  = "prod"
+aws_region   = "us-east-1"
+github_org   = "sensi012"
+github_repo  = "whistech-platform"

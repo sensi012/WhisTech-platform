@@ -1,0 +1,31 @@
+# Auto-merged with docker-compose.yml on: docker compose up
+services:
+
+  db:
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      target: deps
+    command: ["npx", "nodemon", "--watch", "src", "src/index.js"]
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./services/api/src:/app/src:ro
+      - ./database:/app/database:ro
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      target: builder
+    command: ["npm", "start"]
+    environment:
+      REACT_APP_API_URL: /api
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./services/frontend/src:/app/src:ro
+    ports:
+      - "3001:3000"
