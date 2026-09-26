@@ -14,79 +14,79 @@ env:
 
 jobs:
 
-  publish:
-    name: Build, scan, and push
-    runs-on: ubuntu-latest
+  # publish:
+  #   name: Build, scan, and push
+  #   runs-on: ubuntu-latest
 
-    outputs:
-      image_tag:      ${{ steps.tags.outputs.short_sha }}
-      api_image:      ${{ steps.tags.outputs.api_image }}
-      frontend_image: ${{ steps.tags.outputs.frontend_image }}
+  #   outputs:
+  #     image_tag:      ${{ steps.tags.outputs.short_sha }}
+  #     api_image:      ${{ steps.tags.outputs.api_image }}
+  #     frontend_image: ${{ steps.tags.outputs.frontend_image }}
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region:     us-east-1
+  #     - name: Configure AWS credentials (OIDC)
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+  #         aws-region:     us-east-1
 
-      - name: Log in to ECR
-        id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
+  #     - name: Log in to ECR
+  #       id: ecr
+  #       uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Set image tags
-        id: tags
-        run: |
-          SHORT="${GITHUB_SHA::8}"
-          REGISTRY="${{ steps.ecr.outputs.registry }}"
-          echo "short_sha=${SHORT}"                                      >> $GITHUB_OUTPUT
-          echo "api_image=${REGISTRY}/whistech/api:${SHORT}"             >> $GITHUB_OUTPUT
-          echo "frontend_image=${REGISTRY}/whistech/frontend:${SHORT}"   >> $GITHUB_OUTPUT
+  #     - name: Set image tags
+  #       id: tags
+  #       run: |
+  #         SHORT="${GITHUB_SHA::8}"
+  #         REGISTRY="${{ steps.ecr.outputs.registry }}"
+  #         echo "short_sha=${SHORT}"                                      >> $GITHUB_OUTPUT
+  #         echo "api_image=${REGISTRY}/whistech/api:${SHORT}"             >> $GITHUB_OUTPUT
+  #         echo "frontend_image=${REGISTRY}/whistech/frontend:${SHORT}"   >> $GITHUB_OUTPUT
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Build and push API image
-        uses: docker/build-push-action@v6
-        with:
-          context:    ./services/api
-          target:     production
-          push:       true
-          tags:       ${{ steps.tags.outputs.api_image }}
-          build-args: |
-            BUILD_DATE=${{ github.event.repository.pushed_at }}
-            GIT_SHA=${{ github.sha }}
-          cache-from: type=gha
-          cache-to:   type=gha,mode=max
-          provenance: true
-          sbom:       true
+  #     - name: Build and push API image
+  #       uses: docker/build-push-action@v6
+  #       with:
+  #         context:    ./services/api
+  #         target:     production
+  #         push:       true
+  #         tags:       ${{ steps.tags.outputs.api_image }}
+  #         build-args: |
+  #           BUILD_DATE=${{ github.event.repository.pushed_at }}
+  #           GIT_SHA=${{ github.sha }}
+  #         cache-from: type=gha
+  #         cache-to:   type=gha,mode=max
+  #         provenance: true
+  #         sbom:       true
 
-      - name: Trivy scan pushed API image
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref:  ${{ steps.tags.outputs.api_image }}
-          severity:   HIGH,CRITICAL
-          exit-code:  '1'
-          format:     table
+  #     - name: Trivy scan pushed API image
+  #       uses: aquasecurity/trivy-action@0.24.0
+  #       with:
+  #         image-ref:  ${{ steps.tags.outputs.api_image }}
+  #         severity:   HIGH,CRITICAL
+  #         exit-code:  '1'
+  #         format:     table
 
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context:    ./services/frontend
-          target:     production
-          push:       true
-          tags:       ${{ steps.tags.outputs.frontend_image }}
-          cache-from: type=gha
-          cache-to:   type=gha,mode=max
-          provenance: true
-          sbom:       true
+  #     - name: Build and push frontend image
+  #       uses: docker/build-push-action@v6
+  #       with:
+  #         context:    ./services/frontend
+  #         target:     production
+  #         push:       true
+  #         tags:       ${{ steps.tags.outputs.frontend_image }}
+  #         cache-from: type=gha
+  #         cache-to:   type=gha,mode=max
+  #         provenance: true
+  #         sbom:       true
 
-      - name: Deployment summary
-        run: |
-          echo "## Images pushed to ECR"  >> $GITHUB_STEP_SUMMARY
-          echo "| Image | Tag | SHA |"    >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|---|"             >> $GITHUB_STEP_SUMMARY
-          echo "| API      | \`${{ steps.tags.outputs.short_sha }}\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | \`${{ steps.tags.outputs.short_sha }}\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+  #     - name: Deployment summary
+  #       run: |
+  #         echo "## Images pushed to ECR"  >> $GITHUB_STEP_SUMMARY
+  #         echo "| Image | Tag | SHA |"    >> $GITHUB_STEP_SUMMARY
+  #         echo "|---|---|---|"             >> $GITHUB_STEP_SUMMARY
+  #         echo "| API      | \`${{ steps.tags.outputs.short_sha }}\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+  #         echo "| Frontend | \`${{ steps.tags.outputs.short_sha }}\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
