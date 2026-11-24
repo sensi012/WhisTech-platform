@@ -1,15 +1,16 @@
 # ── Stage 1: install production dependencies ────────────────────────
-FROM node:20.15.1-alpine3.20 AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # ── Stage 2: production image ────────────────────────────────────────
-FROM node:20.15.1-alpine3.20 AS production
+FROM node:22-alpine AS production
 
-RUN addgroup -g 1001 -S whistech && \
+RUN apk upgrade --no-cache && \
+    addgroup -g 1001 -S whistech && \
     adduser  -u 1001 -S whistech -G whistech
 
 WORKDIR /app

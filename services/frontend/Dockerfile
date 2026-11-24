@@ -1,5 +1,5 @@
 # ── Stage 1: build React application ────────────────────────────────
-FROM node:20.15.1-alpine3.20 AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -17,9 +17,9 @@ ENV REACT_APP_BUILD_DATE=$BUILD_DATE \
 RUN npm run build
 
 # ── Stage 2: serve with Nginx ────────────────────────────────────────
-FROM nginx:1.27.0-alpine3.19 AS production
+FROM nginx:alpine AS production
 
-RUN rm /etc/nginx/conf.d/default.conf
+RUN apk upgrade --no-cache && rm /etc/nginx/conf.d/default.conf
 
 COPY nginx.conf /etc/nginx/conf.d/app.conf
 COPY --from=builder /app/build /usr/share/nginx/html

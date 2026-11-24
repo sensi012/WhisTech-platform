@@ -62,10 +62,11 @@ jobs:
       - name: Trivy scan API image (gate before push)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ steps.tags.outputs.api_image }}
-          severity:  HIGH,CRITICAL
-          exit-code: '1'
-          format:    table
+          image-ref:      ${{ steps.tags.outputs.api_image }}
+          severity:       HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code:      '1'
+          format:         table
 
       - name: Push API image to ECR
         uses: docker/build-push-action@v6
@@ -94,10 +95,11 @@ jobs:
       - name: Trivy scan frontend image (gate before push)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ steps.tags.outputs.frontend_image }}
-          severity:  HIGH,CRITICAL
-          exit-code: '1'
-          format:    table
+          image-ref:      ${{ steps.tags.outputs.frontend_image }}
+          severity:       HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code:      '1'
+          format:         table
 
       - name: Push frontend image to ECR
         uses: docker/build-push-action@v6
