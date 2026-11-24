@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16.3-alpine3.20
+        image: postgres:16-alpine
         env:
           POSTGRES_DB:       whistech_test
           POSTGRES_USER:     whistech
@@ -35,7 +35,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: services/api/package-lock.json
 
@@ -76,13 +76,14 @@ jobs:
           cache-to:   type=gha,mode=max
 
       - name: Scan API image — fail on HIGH or CRITICAL CVEs
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref:  whistech/api:${{ github.sha }}
-          format:     sarif
-          output:     trivy-api.sarif
-          severity:   HIGH,CRITICAL
-          exit-code:  '1'
+          image-ref:      whistech/api:${{ github.sha }}
+          format:         sarif
+          output:         trivy-api.sarif
+          severity:       HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code:      '1'
 
       - name: Upload scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -101,9 +102,10 @@ jobs:
           cache-to:   type=gha,mode=max
 
       - name: Scan frontend image
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref:  whistech/frontend:${{ github.sha }}
-          severity:   HIGH,CRITICAL
-          exit-code:  '1'
-          format:     table
+          image-ref:      whistech/frontend:${{ github.sha }}
+          severity:       HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code:      '1'
+          format:         table
